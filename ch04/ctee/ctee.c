@@ -44,12 +44,15 @@ void printUsage() {
 }
 
 int run(Config_t *config) {
-  int open_flags = O_CREAT | O_WRONLY | O_TRUNC;
-  if(config->append) {
-    open_flags = O_WRONLY | O_TRUNC;
+  int fd;
+  if(1 == config->append) {
+    fd = open(config->fileName,
+      O_APPEND | O_WRONLY);
+  } else {
+    fd = open(config->fileName,
+      O_CREAT | O_WRONLY | O_TRUNC,
+      S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
   }
-  int file_perm = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-  int fd = open(config->fileName, open_flags, file_perm);
   if (fd < 0) {
     return -1;
   }
@@ -62,6 +65,7 @@ int run(Config_t *config) {
     write(STDOUT_FILENO, (const void *)buffer, numr);
   }
 
+  close(fd);
   return 0;
 }
 
